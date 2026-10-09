@@ -31,6 +31,13 @@ export const ExplainabilityPanel: React.FC<ExplainabilityPanelProps> = ({ explai
         </p>
       )}
 
+      {(explainabilityPayload as any).gemini_clinical_summary && (
+        <div style={{ fontSize: '0.9rem', color: '#1A365D', background: '#EBF8FF', padding: '0.75rem 1rem', borderRadius: '6px', borderLeft: '4px solid #3182CE', marginBottom: '1rem' }}>
+          <strong style={{ display: 'block', color: '#2B6CB0', marginBottom: '0.25rem' }}>✨ Google Gemini AI Symptom & Risk Summary:</strong>
+          {(explainabilityPayload as any).gemini_clinical_summary}
+        </div>
+      )}
+
       <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', color: '#718096', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
         Ranked Contributing Features
       </h4>

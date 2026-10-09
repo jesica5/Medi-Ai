@@ -7,6 +7,8 @@ import {
 import { ImputationEngine } from '@/ml/pipelines/imputation_engine';
 import { RiskScoringEngine } from '@/ml/pipelines/risk_scoring_engine';
 import { TreeSHAPExplainer } from '@/ml/models/tree_shap_explainer';
+import { GeminiService } from '@/shared/services/gemini_service';
+import { FirestoreService } from '@/shared/services/firebase';
 
 export interface AssessOptions {
   hard_red_flag_triggered?: boolean;
@@ -15,7 +17,7 @@ export interface AssessOptions {
 
 export class M3PredictionService {
   /**
-   * Main M3 Entry Point for AI Risk Prediction & TreeSHAP Explainability.
+   * Main M3 Entry Point for AI Risk Prediction, TreeSHAP & Gemini Explainability.
    * Runs under strict server-side protection.
    */
   public static async predictRisk(
@@ -53,7 +55,7 @@ export class M3PredictionService {
         confidence_level: 'HIGH',
       };
 
-      return {
+      const bypassResult: RiskAssessmentResult = {
         patient_id: intake.patient_id,
         calculated_risk_score: 100,
         calculated_category: 'CRITICAL',
@@ -65,6 +67,11 @@ export class M3PredictionService {
         status: 'PENDING_REVIEW',
         created_at: timestamp,
       };
+
+      // Persist to Cloud Firestore
+      await FirestoreService.saveTriageAssessment(bypassResult);
+
+      return bypassResult;
     }
 
     // PHASE 4: Imputation & Missing Data Protocols
@@ -105,7 +112,21 @@ export class M3PredictionService {
       previousVitalsDelta: intake.previous_vitals_delta,
     });
 
-    return {
+    // Server-Side Google Gemini AI Clinical Analysis
+    const geminiSummary = await GeminiService.generateClinicalExplanation({
+      chiefComplaint: intake.chief_complaint,
+      symptomVector: intake.symptom_vector,
+      vitals: intake.vitals,
+      calculatedScore: components.final_score,
+      calculatedCategory: calculated_category,
+      topFeatures: explainability_payload.top_features,
+    });
+
+    if (geminiSummary) {
+      (explainability_payload as any).gemini_clinical_summary = geminiSummary;
+    }
+
+    const finalResult: RiskAssessmentResult = {
       patient_id: intake.patient_id,
       calculated_risk_score: components.final_score,
       calculated_category,
@@ -117,5 +138,10 @@ export class M3PredictionService {
       status: 'PENDING_REVIEW',
       created_at: timestamp,
     };
+
+    // Persist to Cloud Firestore
+    await FirestoreService.saveTriageAssessment(finalResult);
+
+    return finalResult;
   }
 }
