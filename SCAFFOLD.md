@@ -8,7 +8,7 @@ When the shared team scaffold is merged, these root configuration files can be r
 - `package.json` - Pinned dependencies and scripts (`dev`, `build`, `lint`, `typecheck`, `test`).
 - `package-lock.json` - Dependency lockfile.
 - `tsconfig.json` - Strict TypeScript configuration.
-- `next.config.ts` - Minimal Next.js configuration.
+- `next.config.mjs` - Minimal Next.js configuration.
 - `vitest.config.ts` - Minimal Vitest test runner configuration.
 - `vitest.setup.ts` - Test setup file for jest-dom and jest-axe.
 - `.eslintrc.json` - Minimal ESLint configuration extending `next/core-web-vitals`.
