@@ -2,7 +2,7 @@
  * Server-side Gemini AI Service
  * Strictly server-only: Never import or call from client components.
  */
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { VitalsInput, SymptomVector, Language } from '../types';
 
 export interface GeminiRiskExplanation {
@@ -37,7 +37,7 @@ export async function generateGeminiRiskExplanation(params: {
 
   const apiKey = process.env.GEMINI_API_KEY;
 
-  if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY') {
+  if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY' || apiKey.trim() === '') {
     // Graceful fallback for mock/dev environment
     return {
       summary: `Patient reported: "${params.chiefComplaint}" with missing essential vitals: ${params.missingEssentialVitals.join(', ') || 'none'}.`,
@@ -58,8 +58,7 @@ export async function generateGeminiRiskExplanation(params: {
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const ai = new GoogleGenAI({ apiKey });
 
     const prompt = `
 You are an AI decision-support assistant in emergency triage software (MediAI).
@@ -83,8 +82,15 @@ Respond in valid JSON format ONLY with the following schema:
 }
 `;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+      },
+    });
+
+    const responseText = response.text || '';
 
     // Clean JSON response
     const cleanedJson = responseText
