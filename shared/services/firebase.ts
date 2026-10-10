@@ -1,21 +1,38 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore, collection, addDoc, doc, setDoc } from 'firebase/firestore';
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  User,
+} from 'firebase/auth';
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+} from 'firebase/firestore';
 
-const firebaseConfig = {
-  apiKey: (process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'YOUR_FIREBASE_API_KEY')
-    ? process.env.NEXT_PUBLIC_FIREBASE_API_KEY
-    : 'AIzaSyMockKeyForDevTesting123456789',
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'medi-ai-1bead.firebaseapp.com',
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'medi-ai-1bead',
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'medi-ai-1bead.firebasestorage.app',
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '509645038432',
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '1:509645038432:web:8591ee6082aeb8e7ecb405',
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || 'G-J7Y6SD593D',
+export const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'YOUR_FIREBASE_API_KEY',
+  authDomain: 'medi-ai-1bead.firebaseapp.com',
+  projectId: 'medi-ai-1bead',
+  storageBucket: 'medi-ai-1bead.firebasestorage.app',
+  messagingSenderId: '509645038432',
+  appId: '1:509645038432:web:8591ee6082aeb8e7ecb405',
+  measurementId: 'G-J7Y6SD593D',
 };
 
 // Singleton Firebase Instance Helpers
 let firebaseAppInstance: any = null;
+let firebaseAuthInstance: any = null;
 let firebaseDbInstance: any = null;
 
 export function getFirebaseApp() {
@@ -23,6 +40,17 @@ export function getFirebaseApp() {
     firebaseAppInstance = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   }
   return firebaseAppInstance;
+}
+
+export function getFirebaseAuth() {
+  if (!firebaseAuthInstance) {
+    try {
+      firebaseAuthInstance = getAuth(getFirebaseApp());
+    } catch (err) {
+      console.warn('[Firebase Auth Init Warning]:', err);
+    }
+  }
+  return firebaseAuthInstance;
 }
 
 export function getFirebaseDb() {
@@ -37,11 +65,112 @@ export function getFirebaseDb() {
 }
 
 /**
- * Firestore Helper Service for MediAI Data Management
- * Handles patient profiles, medical history, triage assessments, risk predictions, and medication records.
+ * Firebase Authentication Service for MediAI
+ * Manages clinician and patient authentication.
+ */
+export class FirebaseAuthService {
+  public static async signUp(email: string, pass: string): Promise<User | null> {
+    const auth = getFirebaseAuth();
+    if (!auth) return null;
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    return cred.user;
+  }
+
+  public static async signIn(email: string, pass: string): Promise<User | null> {
+    const auth = getFirebaseAuth();
+    if (!auth) return null;
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    return cred.user;
+  }
+
+  public static async signOut(): Promise<void> {
+    const auth = getFirebaseAuth();
+    if (!auth) return;
+    await firebaseSignOut(auth);
+  }
+
+  public static getCurrentUser(): User | null {
+    const auth = getFirebaseAuth();
+    return auth ? auth.currentUser : null;
+  }
+
+  public static onAuthStateChange(callback: (user: User | null) => void) {
+    const auth = getFirebaseAuth();
+    if (!auth) return () => {};
+    return onAuthStateChanged(auth, callback);
+  }
+}
+
+/**
+ * Cloud Firestore Service for MediAI Data Management
+ * Handles patient profiles, medical history, assessments, risk predictions, triage records, and medication information.
  */
 export class FirestoreService {
-  // 1. Save Triage Assessment & Risk Prediction Record
+  // 1. Save & Get Patient Profile
+  public static async savePatientProfile(patientId: string, profileData: any): Promise<void> {
+    try {
+      const db = getFirebaseDb();
+      if (!db) return;
+      const patientRef = doc(db, 'patient_profiles', patientId);
+      await setDoc(
+        patientRef,
+        {
+          ...profileData,
+          updated_at: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+    } catch (error) {
+      console.warn('[Firestore] Error saving patient profile:', error);
+    }
+  }
+
+  public static async getPatientProfile(patientId: string): Promise<any | null> {
+    try {
+      const db = getFirebaseDb();
+      if (!db) return null;
+      const patientRef = doc(db, 'patient_profiles', patientId);
+      const snap = await getDoc(patientRef);
+      return snap.exists() ? snap.data() : null;
+    } catch (error) {
+      console.warn('[Firestore] Error fetching patient profile:', error);
+      return null;
+    }
+  }
+
+  // 2. Save & Get Medical History
+  public static async saveMedicalHistory(patientId: string, historyData: any): Promise<string> {
+    try {
+      const db = getFirebaseDb();
+      if (!db) return `hist_${Date.now()}`;
+      const historyRef = collection(db, 'medical_histories');
+      const docRef = await addDoc(historyRef, {
+        patient_id: patientId,
+        ...historyData,
+        created_at: new Date().toISOString(),
+      });
+      return docRef.id;
+    } catch (error) {
+      console.warn('[Firestore] Error saving medical history:', error);
+      return `hist_${Date.now()}`;
+    }
+  }
+
+  public static async getMedicalHistory(patientId: string): Promise<any[]> {
+    try {
+      const db = getFirebaseDb();
+      if (!db) return [];
+      const historyRef = collection(db, 'medical_histories');
+      const q = query(historyRef, where('patient_id', '==', patientId));
+      const snap = await getDocs(q);
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    } catch (error) {
+      console.warn('[Firestore] Error fetching medical history:', error);
+      return [];
+    }
+  }
+
+  // 3. Save & Get Triage Assessments
   public static async saveTriageAssessment(assessment: any): Promise<string> {
     try {
       const db = getFirebaseDb();
@@ -53,27 +182,95 @@ export class FirestoreService {
       });
       return docRef.id;
     } catch (error) {
-      // Graceful offline fallback during tests or missing credentials
       return `doc_${Date.now()}`;
     }
   }
 
-  // 2. Save Patient Profile & Medical History
-  public static async savePatientProfile(patientId: string, profileData: any): Promise<void> {
+  public static async getTriageAssessments(patientId?: string): Promise<any[]> {
     try {
       const db = getFirebaseDb();
-      if (!db) return;
-      const patientRef = doc(db, 'patient_profiles', patientId);
-      await setDoc(patientRef, {
-        ...profileData,
-        updated_at: new Date().toISOString(),
-      }, { merge: true });
+      if (!db) return [];
+      const assessmentsRef = collection(db, 'triage_assessments');
+      const q = patientId
+        ? query(assessmentsRef, where('patient_id', '==', patientId))
+        : query(assessmentsRef);
+      const snap = await getDocs(q);
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     } catch (error) {
-      console.warn('[Firestore] Error saving patient profile:', error);
+      console.warn('[Firestore] Error fetching triage assessments:', error);
+      return [];
     }
   }
 
-  // 3. Save Patient Medication Information
+  // 4. Save & Get Risk Predictions
+  public static async saveRiskPrediction(patientId: string, predictionData: any): Promise<string> {
+    try {
+      const db = getFirebaseDb();
+      if (!db) return `pred_${Date.now()}`;
+      const predRef = collection(db, 'risk_predictions');
+      const docRef = await addDoc(predRef, {
+        patient_id: patientId,
+        ...predictionData,
+        created_at: new Date().toISOString(),
+      });
+      return docRef.id;
+    } catch (error) {
+      console.warn('[Firestore] Error saving risk prediction:', error);
+      return `pred_${Date.now()}`;
+    }
+  }
+
+  public static async getRiskPredictions(patientId?: string): Promise<any[]> {
+    try {
+      const db = getFirebaseDb();
+      if (!db) return [];
+      const predRef = collection(db, 'risk_predictions');
+      const q = patientId
+        ? query(predRef, where('patient_id', '==', patientId))
+        : query(predRef);
+      const snap = await getDocs(q);
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    } catch (error) {
+      console.warn('[Firestore] Error fetching risk predictions:', error);
+      return [];
+    }
+  }
+
+  // 5. Save & Get Triage Records
+  public static async saveTriageRecord(patientId: string, recordData: any): Promise<string> {
+    try {
+      const db = getFirebaseDb();
+      if (!db) return `rec_${Date.now()}`;
+      const recordRef = collection(db, 'triage_records');
+      const docRef = await addDoc(recordRef, {
+        patient_id: patientId,
+        ...recordData,
+        created_at: new Date().toISOString(),
+      });
+      return docRef.id;
+    } catch (error) {
+      console.warn('[Firestore] Error saving triage record:', error);
+      return `rec_${Date.now()}`;
+    }
+  }
+
+  public static async getTriageRecords(patientId?: string): Promise<any[]> {
+    try {
+      const db = getFirebaseDb();
+      if (!db) return [];
+      const recordRef = collection(db, 'triage_records');
+      const q = patientId
+        ? query(recordRef, where('patient_id', '==', patientId))
+        : query(recordRef);
+      const snap = await getDocs(q);
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    } catch (error) {
+      console.warn('[Firestore] Error fetching triage records:', error);
+      return [];
+    }
+  }
+
+  // 6. Save & Get Medication Information
   public static async saveMedicationRecord(patientId: string, medicationData: any): Promise<string> {
     try {
       const db = getFirebaseDb();
@@ -90,4 +287,19 @@ export class FirestoreService {
       return `med_${Date.now()}`;
     }
   }
+
+  public static async getMedicationRecords(patientId: string): Promise<any[]> {
+    try {
+      const db = getFirebaseDb();
+      if (!db) return [];
+      const medRef = collection(db, 'patient_medications');
+      const q = query(medRef, where('patient_id', '==', patientId));
+      const snap = await getDocs(q);
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    } catch (error) {
+      console.warn('[Firestore] Error fetching medication records:', error);
+      return [];
+    }
+  }
 }
+
