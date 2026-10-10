@@ -1,0 +1,29 @@
+# Dependencies
+node_modules
+/.pnp
+.pnp.js
+
+# Testing & Coverage
+/coverage
+*.log
+
+# Next.js Build Output
+/.next/
+/out/
+
+# Production & Build
+/build
+/dist
+
+# Environment & Local Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE & System
+.DS_Store
+*.pem
+.vscode/
+.idea/
