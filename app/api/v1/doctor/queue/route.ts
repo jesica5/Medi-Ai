@@ -1,11 +1,12 @@
+// TODO: Unify authorization roles with develop M1 auth session (Attending Doctor, Triage Nurse, System Administrator)
 import { NextRequest, NextResponse } from 'next/server';
 import { QueueService } from '@/modules/triage_engine/application/queue_service';
 import { TriageOrchestrator } from '@/modules/triage_engine/application/triage_orchestrator';
-import { ApiSuccessEnvelope, ApiErrorEnvelope, UserRole } from '@/shared/types/triage';
+import { ApiSuccessEnvelope, ApiErrorEnvelope, TriageUserRole } from '@/shared/types/triage';
 
 export async function GET(req: NextRequest) {
   try {
-    const userRole = (req.headers.get('x-user-role') || 'doctor') as UserRole;
+    const userRole = (req.headers.get('x-user-role') || 'doctor') as TriageUserRole;
 
     // RBAC: Only Attending Doctor & Triage Nurse can access doctor queue
     if (userRole !== 'doctor' && userRole !== 'nurse' && userRole !== 'admin') {

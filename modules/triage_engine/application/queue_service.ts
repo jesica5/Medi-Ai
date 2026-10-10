@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { UserRole, AcuityCategory, TriageAssessmentRecord } from '@/shared/types/triage';
+import { TriageUserRole, AcuityCategory, TriageAssessmentRecord } from '@/shared/types/triage';
 
 export interface QueueItemView {
   id: string;
@@ -44,7 +44,7 @@ export class QueueService {
 
   static formatQueueItem(
     assessment: TriageAssessmentRecord,
-    role: UserRole,
+    role: TriageUserRole,
     patientMRN = 'MRN-99482',
     patientName = 'John Doe',
     alertStatus = 'DISPATCHED'

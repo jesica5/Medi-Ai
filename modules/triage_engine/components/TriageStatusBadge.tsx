@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { AcuityCategory, RedFlagDetail } from '@/shared/types/triage';
+// TODO: consolidate with shared/locales/en.ts
 import enUS from '@/shared/locales/en-US.json';
 import taIN from '@/shared/locales/ta-IN.json';
 

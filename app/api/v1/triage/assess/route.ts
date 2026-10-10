@@ -1,12 +1,13 @@
+// TODO: Unify authorization roles with develop M1 auth session (Attending Doctor, Triage Nurse, System Administrator)
 import { NextRequest, NextResponse } from 'next/server';
 import { TriageOrchestrator } from '@/modules/triage_engine/application/triage_orchestrator';
 import { AuditContext } from '@/modules/triage_engine/application/audit_service';
-import { ApiSuccessEnvelope, ApiErrorEnvelope, UserRole } from '@/shared/types/triage';
+import { ApiSuccessEnvelope, ApiErrorEnvelope, TriageUserRole } from '@/shared/types/triage';
 
 export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get('authorization') || '';
-    const userRole = (req.headers.get('x-user-role') || 'nurse') as UserRole;
+    const userRole = (req.headers.get('x-user-role') || 'nurse') as TriageUserRole;
     const userId = req.headers.get('x-user-id') || 'usr_intake_system';
     const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
     const userAgent = req.headers.get('user-agent') || 'MediAI-Client/1.0';

@@ -1,22 +1,7 @@
--- MediAI Module M4 Database Schema Migration Proposal
--- Target DB: Supabase PostgreSQL with RLS and Audit Triggers
+-- Migration: 20261010000000_m4_triage_tables.sql
+-- Description: Schema for M4 Smart Triage, Safety Rules & Alerts (additive over M1 schema)
 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
--- Table 1: patients
-CREATE TABLE IF NOT EXISTS patients (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  mrn_hash VARCHAR(64) UNIQUE NOT NULL,
-  encrypted_name BYTEA NOT NULL,
-  date_of_birth DATE NOT NULL,
-  gender VARCHAR(16) NOT NULL,
-  primary_language VARCHAR(8) DEFAULT 'en',
-  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-);
-
--- Table 2: vital_signs
+-- Table: vital_signs (Snapshot of clinical observations)
 CREATE TABLE IF NOT EXISTS vital_signs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
@@ -31,7 +16,7 @@ CREATE TABLE IF NOT EXISTS vital_signs (
   recorded_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table 3: triage_assessments
+-- Table: triage_assessments (Core Decision-Support Output)
 CREATE TABLE IF NOT EXISTS triage_assessments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
@@ -48,7 +33,7 @@ CREATE TABLE IF NOT EXISTS triage_assessments (
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table 4: triage_reviews
+-- Table: triage_reviews (Doctor Review & Clinical Override Audit Ledger)
 CREATE TABLE IF NOT EXISTS triage_reviews (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   assessment_id UUID NOT NULL REFERENCES triage_assessments(id) ON DELETE RESTRICT,
@@ -61,19 +46,7 @@ CREATE TABLE IF NOT EXISTS triage_reviews (
   reviewed_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table 5: triage_audit_log (Immutable, Append-Only)
-CREATE TABLE IF NOT EXISTS triage_audit_log (
-  id BIGSERIAL PRIMARY KEY,
-  event_type VARCHAR(64) NOT NULL,
-  user_id UUID,
-  patient_id UUID,
-  ip_address INET NOT NULL,
-  user_agent TEXT,
-  payload JSONB NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-);
-
--- Table 6: triage_alerts (M4/M5 Alert status tracking)
+-- Table: triage_alerts (M4/M5 Alert status tracking)
 CREATE TABLE IF NOT EXISTS triage_alerts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   assessment_id UUID NOT NULL REFERENCES triage_assessments(id) ON DELETE CASCADE,
@@ -99,9 +72,28 @@ BEFORE UPDATE OR DELETE ON triage_audit_log
 FOR EACH ROW EXECUTE FUNCTION prevent_audit_log_modification();
 
 -- Enable Row Level Security (RLS)
-ALTER TABLE patients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vital_signs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE triage_assessments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE triage_reviews ENABLE ROW LEVEL SECURITY;
-ALTER TABLE triage_audit_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE triage_alerts ENABLE ROW LEVEL SECURITY;
+
+-- Service role full access policies
+CREATE POLICY "Service role full access on vital_signs"
+  ON vital_signs FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Service role full access on triage_assessments"
+  ON triage_assessments FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Service role full access on triage_reviews"
+  ON triage_reviews FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Service role full access on triage_alerts"
+  ON triage_alerts FOR ALL
+  USING (true)
+  WITH CHECK (true);

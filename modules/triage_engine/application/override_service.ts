@@ -1,9 +1,9 @@
-import { UserRole, AcuityCategory, DoctorOverrideRequest, TriageReviewRecord, TriageAssessmentRecord } from '@/shared/types/triage';
+import { TriageUserRole, AcuityCategory, DoctorOverrideRequest, TriageReviewRecord, TriageAssessmentRecord } from '@/shared/types/triage';
 
 export class OverrideService {
   private static validCategories: AcuityCategory[] = ['LOW', 'MODERATE', 'HIGH', 'CRITICAL'];
 
-  static validateOverrideRequest(req: DoctorOverrideRequest, originalCategory: AcuityCategory, role: UserRole): {
+  static validateOverrideRequest(req: DoctorOverrideRequest, originalCategory: AcuityCategory, role: TriageUserRole): {
     isValid: boolean;
     error?: string;
   } {

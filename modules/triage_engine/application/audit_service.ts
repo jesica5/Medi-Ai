@@ -1,10 +1,10 @@
 import crypto from 'crypto';
-import { AuditEventType, UserRole, TriageAuditLogEntry, AuditLogPayload } from '@/shared/types/triage';
+import { AuditEventType, TriageUserRole, TriageAuditLogEntry, AuditLogPayload } from '@/shared/types/triage';
 
 export interface AuditContext {
   userId?: string | null;
   patientId?: string | null;
-  actorRole: UserRole;
+  actorRole: TriageUserRole;
   ipAddress: string;
   userAgent?: string | null;
 }

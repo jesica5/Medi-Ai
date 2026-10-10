@@ -3,11 +3,13 @@ import path from 'path';
 
 export default defineConfig({
   test: {
-    globals: true,
     environment: 'node',
-    alias: {
-      '@': path.resolve(__dirname, './'),
-    },
+    globals: true,
+    include: [
+      'tests/doctor/**/*.test.ts',
+      'tests/unit/triage_engine/**/*.test.ts',
+      'tests/e2e/**/*.test.ts',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -18,6 +20,11 @@ export default defineConfig({
         branches: 100,
         statements: 100,
       },
+    },
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './'),
     },
   },
 });
