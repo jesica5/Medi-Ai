@@ -1,9 +1,15 @@
-import type { Metadata } from 'next';
-import '../modules/patient_intake/styles/tokens.css';
+import React from 'react';
+import './globals.css';
+import { Metadata } from 'next';
+import { LanguageProvider } from '@/shared/context/LanguageContext';
+import { AuthProvider } from '@/shared/context/AuthContext';
+import { Header } from '@/shared/components/Header';
+import { Footer } from '@/shared/components/Footer';
 
 export const metadata: Metadata = {
-  title: 'MediAI - Emergency Triage & Health Assessment',
-  description: 'AI-assisted emergency triage and risk prediction decision-support prototype.',
+  title: 'MediAI — Smart Patient Triage & Emergency Risk Prediction',
+  description:
+    'AI-assisted clinical decision-support prototype for structured patient intake, emergency risk stratification, and hospital triage management.',
 };
 
 export default function RootLayout({
@@ -12,9 +18,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body style={{ margin: 0, fontFamily: 'var(--font-family-base)', backgroundColor: 'var(--color-surface-bg)' }}>
-        {children}
+    <html lang="en" className="h-full">
+      <body className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-sky-50/20 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100">
+        <LanguageProvider>
+          <AuthProvider>
+            <Header />
+            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              {children}
+            </main>
+            <Footer />
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

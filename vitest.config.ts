@@ -5,9 +5,12 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'jsdom',
+    environment: 'node',
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
+    include: ['tests/doctor/**/*.test.ts', 'modules/**/__tests__/**/*.test.{ts,tsx}'],
+  },
+  resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
     },

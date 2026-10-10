@@ -1,5 +1,6 @@
 'use client';
 
+import '../../modules/patient_intake/styles/tokens.css';
 import React, { useState, useCallback } from 'react';
 import { VitalsInput, Demographics, MedicalHistory, SymptomVector, Language } from '../../modules/patient_intake/types';
 import { getMissingEssentialVitals } from '../../modules/patient_intake/schemas/vitals.schema';
@@ -115,7 +116,7 @@ export default function IntakePage() {
 
   if (submitStatus === 'success') {
     return (
-      <main className={styles.main}>
+      <div className={`${styles.main} m2Root`}>
         <div className={styles.successCard} role="status">
           <div className={styles.successIcon}>✓</div>
           <h1>Assessment Submitted</h1>
@@ -128,12 +129,12 @@ export default function IntakePage() {
             Start New Assessment
           </button>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className={styles.main}>
+    <div className={`${styles.main} m2Root`}>
       <div className={styles.header}>
         <h1 className={styles.title}>Health Assessment</h1>
         <div className={styles.langSwitch}>
@@ -225,6 +226,6 @@ export default function IntakePage() {
       <footer className={styles.disclaimer}>
         {t.common.disclaimer}
       </footer>
-    </main>
+    </div>
   );
 }
