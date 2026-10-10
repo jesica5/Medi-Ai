@@ -60,6 +60,10 @@ GEMINI_API_KEY=YOUR_GEMINI_API_KEY
    npm test
    # Or run doctor workstation tests
    npm run test:doctor
+   # Or run M2 health assessment tests
+   npm run test:m2
+   # Or run all test suites
+   npm run test:all
    ```
 
 ## Module M5: Doctor Emergency Workstation
@@ -68,3 +72,17 @@ GEMINI_API_KEY=YOUR_GEMINI_API_KEY
 - **Clinical Review Workspace (`/doctor/review/[id]`)**: Full patient assessment console with vital signs trajectories, explainable AI feature attribution (TreeSHAP), and physician override console with mandatory rationale safeguards.
 - **Medication Reconciliation (`/doctor/medications`)**: Clinical history review and reconciliation interface (automated prescribing strictly excluded).
 - **Emergency Analytics (`/doctor/analytics`)**: De-identified aggregate throughput, acuity distribution, and clinical concordance metrics.
+
+## Module M2: Health Assessment & Medical History
+
+- **Health Assessment Wizard (`/intake`)**: Multi-step patient intake interface covering chief complaints, symptom details, vital signs capture with validation, medical history, and emergency escalation.
+- **Triage Assessment API (`/api/v1/triage/assess`)**: POST endpoint for submitting patient intake assessments, calculating deterministic rule-based triage acuity scores, generating AI clinical rationale and patient explanations, and recording assessments to Firestore.
+- **Testing**:
+  ```bash
+  npm run test:m2
+  ```
+- **Encapsulated Scope**:
+  - `modules/patient_intake/` (components, hooks, services, types, schemas)
+  - `app/intake/` (intake page route wrapper)
+  - `app/api/v1/triage/assess/` (triage assess route handler)
+  - `docs/assumed_schema.sql` (reference DDL)

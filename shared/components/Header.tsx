@@ -51,6 +51,12 @@ export const Header: React.FC = () => {
                 {t.nav.intake}
               </Link>
               <Link
+                href="/intake"
+                className="px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                Health Assessment
+              </Link>
+              <Link
                 href="/patient/profile"
                 className="px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
