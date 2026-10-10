@@ -1,4 +1,5 @@
-import { AcuityCategory, VitalSignsInput, ImputedPatientDemographics } from '@/shared/types/triage';
+import { AcuityCategory } from '@/shared/types/triage';
+import { VitalSignsInput, ImputedPatientDemographics } from '@/shared/types/m3';
 
 export interface ScoreComponents {
   s_vitals: number;

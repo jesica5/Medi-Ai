@@ -1,10 +1,9 @@
 'use client';
 import React from 'react';
-import { ExplainabilityPayload } from '@/shared/types/triage';
-import '@/shared/styles/triage.css';
+import { M3ExplainabilityPayload } from '@/shared/types/m3';
 
 interface ExplainabilityPanelProps {
-  explainabilityPayload: ExplainabilityPayload | null;
+  explainabilityPayload: M3ExplainabilityPayload | null;
 }
 
 export const ExplainabilityPanel: React.FC<ExplainabilityPanelProps> = ({ explainabilityPayload }) => {

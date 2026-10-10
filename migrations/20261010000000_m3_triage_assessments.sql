@@ -30,6 +30,7 @@ CREATE INDEX IF NOT EXISTS idx_triage_assessments_category ON triage_assessments
 ALTER TABLE triage_assessments ENABLE ROW LEVEL SECURITY;
 
 -- Allow authenticated clinicians/nurses read/write access
+DROP POLICY IF EXISTS triage_assessments_clinician_policy ON triage_assessments;
 CREATE POLICY triage_assessments_clinician_policy ON triage_assessments
   FOR ALL
   TO authenticated

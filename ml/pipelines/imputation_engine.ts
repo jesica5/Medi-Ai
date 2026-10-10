@@ -1,4 +1,4 @@
-import { PatientDemographicsInput, ImputedPatientDemographics, ImputedVariableMeta } from '@/shared/types/triage';
+import { PatientDemographicsInput, ImputedPatientDemographics, ImputedVariableMeta } from '@/shared/types/m3';
 
 /**
  * Age/Gender Stratified Median Reference Dataset (Approved Baseline Artifact)

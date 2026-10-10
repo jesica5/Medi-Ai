@@ -1,219 +1,154 @@
 'use client';
-import React, { useState } from 'react';
-import { RiskResultPanel } from '@/modules/triage_engine/components/RiskResultPanel';
-import { ExplainabilityPanel } from '@/modules/triage_engine/components/ExplainabilityPanel';
-import { RiskAssessmentResult } from '@/shared/types/triage';
 
-export default function M3TriageDemoPage() {
-  const [chiefComplaint, setChiefComplaint] = useState('Severe chest pain radiating to left arm');
-  const [heartRate, setHeartRate] = useState<number | ''>(115);
-  const [sysBp, setSysBp] = useState<number | ''>(145);
-  const [spo2, setSpo2] = useState<number | ''>(92);
-  const [respRate, setRespRate] = useState<number | ''>(24);
-  const [temp, setTemp] = useState<number | ''>(37.2);
-  const [age, setAge] = useState<number | ''>(68);
-  const [gender, setGender] = useState<string>('female');
-  const [hardRedFlag, setHardRedFlag] = useState<boolean>(false);
-  const [previousDelta, setPreviousDelta] = useState<number>(8);
+import React from 'react';
+import Link from 'next/link';
+import { useLanguage } from '@/shared/context/LanguageContext';
+import { Card } from '@/shared/components/Card';
+import { Button } from '@/shared/components/Button';
+import { PrivacyNotice } from '@/shared/components/PrivacyNotice';
+import {
+  UserPlus,
+  Shield,
+  Activity,
+  HeartPulse,
+  Lock,
+  Globe2,
+  ArrowRight,
+  Sparkles,
+} from 'lucide-react';
 
-  const [result, setResult] = useState<RiskAssessmentResult | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleAssess = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const payload = {
-        chief_complaint: chiefComplaint,
-        vitals: {
-          heart_rate: heartRate === '' ? null : Number(heartRate),
-          systolic_bp: sysBp === '' ? null : Number(sysBp),
-          oxygen_saturation: spo2 === '' ? null : Number(spo2),
-          respiratory_rate: respRate === '' ? null : Number(respRate),
-          temperature_celsius: temp === '' ? null : Number(temp),
-        },
-        demographics: {
-          age: age === '' ? null : Number(age),
-          gender,
-          immunosuppressed: false,
-          chronic_comorbidities: ['Hypertension', 'Type 2 Diabetes'],
-        },
-        previous_vitals_delta: previousDelta,
-        hard_red_flag_triggered: hardRedFlag,
-        red_flag_details: hardRedFlag ? ['SpO2 < 90% on room air', 'qSOFA >= 2'] : [],
-      };
-
-      const res = await fetch('/api/v1/triage/assess', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const json = await res.json();
-      if (!res.ok || json.error) {
-        throw new Error(json.error?.message || 'Failed to process triage risk assessment');
-      }
-
-      setResult(json.data);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to connect to triage assessment service');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+export default function WelcomePage() {
+  const { t } = useLanguage();
 
   return (
-    <main style={{ padding: '2rem 1rem', maxWidth: '1100px', margin: '0 auto', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-      <header style={{ marginBottom: '2rem', borderBottom: '2px solid #E2E8F0', paddingBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ margin: 0, color: '#1A365D', fontSize: '1.75rem' }}>
-            🏥 MediAI Smart Patient Triage System
-          </h1>
-          <p style={{ margin: '0.35rem 0 0 0', color: '#4A5568', fontSize: '0.95rem' }}>
-            <strong>Module M3 — AI Risk Prediction & Explainability</strong> (Assigned Developer: Madhu Mitha)
-          </p>
+    <div className="space-y-10 max-w-5xl mx-auto">
+      {/* Hero Section */}
+      <div className="text-center space-y-6 pt-4 sm:pt-8">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-700 dark:text-brand-300 text-xs font-bold tracking-wide">
+          <Sparkles className="w-4 h-4 text-brand-500 animate-spin" />
+          <span>{t.welcome.heroTitle}</span>
         </div>
 
-        <a
-          href="/dashboard/admin/model-quality"
-          style={{ background: '#3182CE', color: '#fff', padding: '0.5rem 1rem', borderRadius: '6px', textDecoration: 'none', fontWeight: 600, fontSize: '0.875rem' }}
-        >
-          ⚙️ Admin Model Quality
-        </a>
-      </header>
+        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white max-w-4xl mx-auto leading-tight">
+          {t.app.subtitle}
+        </h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-        {/* Left Column: Intake Form */}
-        <section className="triage-card" aria-label="Intake Inputs Form">
-          <h2 style={{ marginTop: 0, fontSize: '1.2rem', color: '#2D3748', borderBottom: '1px solid #EDF2F7', paddingBottom: '0.5rem' }}>
-            📋 Clinical Assessment Inputs (M2/M4 Contract)
-          </h2>
+        <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+          {t.welcome.heroDesc}
+        </p>
 
-          <form onSubmit={handleAssess}>
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', color: '#4A5568', marginBottom: '0.25rem' }}>
-                Chief Complaint
-              </label>
-              <input
-                type="text"
-                value={chiefComplaint}
-                onChange={(e) => setChiefComplaint(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #CBD5E0' }}
-                required
-              />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', color: '#4A5568' }}>Heart Rate (bpm)</label>
-                <input
-                  type="number"
-                  value={heartRate}
-                  onChange={(e) => setHeartRate(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="Essential vital"
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #CBD5E0' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', color: '#4A5568' }}>Systolic BP (mmHg)</label>
-                <input
-                  type="number"
-                  value={sysBp}
-                  onChange={(e) => setSysBp(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="Essential vital"
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #CBD5E0' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', color: '#4A5568' }}>SpO2 (%)</label>
-                <input
-                  type="number"
-                  value={spo2}
-                  onChange={(e) => setSpo2(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="Essential vital"
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #CBD5E0' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', color: '#4A5568' }}>Resp Rate (bpm)</label>
-                <input
-                  type="number"
-                  value={respRate}
-                  onChange={(e) => setRespRate(e.target.value === '' ? '' : Number(e.target.value))}
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #CBD5E0' }}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', color: '#4A5568' }}>Age (years)</label>
-                <input
-                  type="number"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="Leave empty to test imputation"
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #CBD5E0' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', color: '#4A5568' }}>Gender</label>
-                <select
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value)}
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #CBD5E0' }}
-                >
-                  <option value="female">Female</option>
-                  <option value="male">Male</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '1rem', padding: '0.75rem', background: '#FFF5F5', border: '1px solid #FEB2B2', borderRadius: '6px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: '#C53030', cursor: 'pointer', fontSize: '0.9rem' }}>
-                <input
-                  type="checkbox"
-                  checked={hardRedFlag}
-                  onChange={(e) => setHardRedFlag(e.target.checked)}
-                />
-                Simulate M4 Hard Red-Flag Trigger (Bypasses ML & forces CRITICAL/P1)
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                background: '#2B6CB0',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '6px',
-                fontWeight: 700,
-                fontSize: '1rem',
-                cursor: 'pointer',
-              }}
+        {/* Primary CTAs */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          <Link href="/patient/intake" className="w-full sm:w-auto">
+            <Button
+              size="lg"
+              variant="primary"
+              className="w-full sm:w-auto shadow-lg shadow-brand-500/25"
+              leftIcon={<UserPlus className="w-5 h-5" />}
+              rightIcon={<ArrowRight className="w-5 h-5" />}
             >
-              {isLoading ? 'Processing Triage Inference...' : '⚡ Run AI Risk Assessment'}
-            </button>
-          </form>
-        </section>
-
-        {/* Right Column: Output Panels */}
-        <section aria-label="Risk and Explainability Outputs">
-          <RiskResultPanel result={result} isLoading={isLoading} error={error} onRetry={handleAssess} />
-          {result && <ExplainabilityPanel explainabilityPayload={result.explainability_payload} />}
-        </section>
+              {t.welcome.beginIntake}
+            </Button>
+          </Link>
+          <Link href="/signin" className="w-full sm:w-auto">
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full sm:w-auto"
+              leftIcon={<Shield className="w-5 h-5 text-brand-500" />}
+            >
+              {t.welcome.staffLogin}
+            </Button>
+          </Link>
+        </div>
       </div>
-    </main>
+
+      {/* Capabilities Overview Grid */}
+      <div className="space-y-4">
+        <h2 className="text-xs font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400 text-center">
+          {t.welcome.featuresTitle}
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="hover:border-brand-500/40 transition-colors">
+            <div className="space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+                <Globe2 className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                {t.welcome.feature1Title}
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                {t.welcome.feature1Desc}
+              </p>
+            </div>
+          </Card>
+
+          <Card className="hover:border-brand-500/40 transition-colors">
+            <div className="space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <Lock className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                {t.welcome.feature2Title}
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                {t.welcome.feature2Desc}
+              </p>
+            </div>
+          </Card>
+
+          <Card className="hover:border-brand-500/40 transition-colors">
+            <div className="space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                <HeartPulse className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                {t.welcome.feature3Title}
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                {t.welcome.feature3Desc}
+              </p>
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {/* Clinical Acuity Standard Color Tokens Note */}
+      <Card className="bg-slate-900/90 text-white border-slate-800">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Activity className="w-5 h-5 text-brand-400" />
+            <h3 className="text-sm font-bold tracking-wide">
+              Shared Clinical Acuity Color Tokens (M1 Governance)
+            </h3>
+          </div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Module M1 preserves team-wide acuity design tokens without independently calculating risk tiers:
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+            <div className="p-2.5 rounded-lg bg-[#E53E3E]/20 border border-[#E53E3E]/40 text-center">
+              <div className="w-3 h-3 rounded-full bg-[#E53E3E] mx-auto mb-1"></div>
+              <span className="text-[11px] font-bold text-red-200">Critical (#E53E3E)</span>
+            </div>
+            <div className="p-2.5 rounded-lg bg-[#ED8936]/20 border border-[#ED8936]/40 text-center">
+              <div className="w-3 h-3 rounded-full bg-[#ED8936] mx-auto mb-1"></div>
+              <span className="text-[11px] font-bold text-orange-200">High (#ED8936)</span>
+            </div>
+            <div className="p-2.5 rounded-lg bg-[#ECC94B]/20 border border-[#ECC94B]/40 text-center">
+              <div className="w-3 h-3 rounded-full bg-[#ECC94B] mx-auto mb-1"></div>
+              <span className="text-[11px] font-bold text-yellow-200">Moderate (#ECC94B)</span>
+            </div>
+            <div className="p-2.5 rounded-lg bg-[#38A169]/20 border border-[#38A169]/40 text-center">
+              <div className="w-3 h-3 rounded-full bg-[#38A169] mx-auto mb-1"></div>
+              <span className="text-[11px] font-bold text-green-200">Low (#38A169)</span>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Privacy Notice */}
+      <PrivacyNotice />
+    </div>
   );
 }

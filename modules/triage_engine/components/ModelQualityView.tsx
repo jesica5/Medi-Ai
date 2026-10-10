@@ -1,7 +1,6 @@
 'use client';
 import React from 'react';
-import { ModelMetadata } from '@/shared/types/triage';
-import '@/shared/styles/triage.css';
+import { ModelMetadata } from '@/shared/types/m3';
 
 const SAMPLE_MODEL_METADATA: ModelMetadata = {
   model_id: 'mod_xgboost_triage_v2',

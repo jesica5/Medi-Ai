@@ -1,7 +1,6 @@
 'use client';
 import React from 'react';
-import { RiskAssessmentResult } from '@/shared/types/triage';
-import '@/shared/styles/triage.css';
+import { RiskAssessmentResult } from '@/shared/types/m3';
 
 interface RiskResultPanelProps {
   result: RiskAssessmentResult | null;

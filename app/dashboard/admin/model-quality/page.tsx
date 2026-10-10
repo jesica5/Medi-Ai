@@ -1,4 +1,5 @@
 import React from 'react';
+import '@/shared/styles/triage.css';
 import { ModelQualityView } from '@/modules/triage_engine/components/ModelQualityView';
 
 export const metadata = {

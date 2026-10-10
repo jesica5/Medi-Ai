@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSuccessResponse, createErrorResponse } from '@/shared/types/api';
-import { ClinicalIntakePayload } from '@/shared/types/triage';
+import { createSuccessEnvelope, createErrorEnvelope } from '@/shared/utils/envelope';
+import { logAuditEvent } from '@/shared/utils/auditLogger';
+import { ClinicalIntakePayload } from '@/shared/types/m3';
 import { M3PredictionService } from '@/modules/triage_engine/services/m3_prediction_service';
 
 export async function POST(req: NextRequest) {
@@ -10,15 +11,15 @@ export async function POST(req: NextRequest) {
     // Input Validation
     if (!body || typeof body !== 'object') {
       return NextResponse.json(
-        createErrorResponse('INVALID_INPUT', 'Request payload must be a valid JSON object'),
+        createErrorEnvelope('INVALID_INPUT', 'Request payload must be a valid JSON object'),
         { status: 400 }
       );
     }
 
     if (!body.chief_complaint || typeof body.chief_complaint !== 'string') {
       return NextResponse.json(
-        createErrorResponse('MISSING_FIELD', 'chief_complaint is required and must be a string', [
-          { field: 'chief_complaint', message: 'Field missing or invalid' },
+        createErrorEnvelope('MISSING_FIELD', 'chief_complaint is required and must be a string', [
+          { field: 'chief_complaint', issue: 'Field missing or invalid' },
         ]),
         { status: 400 }
       );
@@ -57,12 +58,23 @@ export async function POST(req: NextRequest) {
       red_flag_details: Array.isArray(body.red_flag_details) ? body.red_flag_details : [],
     });
 
-    return NextResponse.json(createSuccessResponse(result, { module: 'M3-AI-Prediction' }), { status: 200 });
+    // Zero-PHI Audit Logging
+    await logAuditEvent({
+      eventType: 'M3_RISK_ASSESSMENT_GENERATED',
+      ipAddress: req.headers.get('x-forwarded-for') || '127.0.0.1',
+      userAgent: req.headers.get('user-agent') || 'Browser',
+      payload: {
+        category: result.calculated_category,
+        score: result.calculated_risk_score,
+      },
+    });
+
+    return NextResponse.json(createSuccessEnvelope(result, { module: 'M3-AI-Prediction' }), { status: 200 });
   } catch (error: any) {
     console.error('[M3 API Error]:', error?.message || error);
     return NextResponse.json(
-      createErrorResponse('INTERNAL_ERROR', 'An unexpected error occurred during triage risk assessment.', [
-        { message: error?.message || 'Server-side inference exception' },
+      createErrorEnvelope('INTERNAL_ERROR', 'An unexpected error occurred during triage risk assessment.', [
+        { issue: error?.message || 'Server-side inference exception' },
       ]),
       { status: 500 }
     );

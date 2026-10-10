@@ -2,13 +2,13 @@ import {
   ClinicalIntakePayload,
   RiskAssessmentResult,
   UncertaintyMetadata,
-  AcuityCategory,
-} from '@/shared/types/triage';
+} from '@/shared/types/m3';
+import { AcuityCategory } from '@/shared/types/triage';
 import { ImputationEngine } from '@/ml/pipelines/imputation_engine';
 import { RiskScoringEngine } from '@/ml/pipelines/risk_scoring_engine';
 import { TreeSHAPExplainer } from '@/ml/models/tree_shap_explainer';
-import { GeminiService } from '@/shared/services/gemini_service';
-import { FirestoreService } from '@/shared/services/firebase';
+import { GeminiService } from './m3_gemini_explainer';
+import { saveM3TriageAssessment } from '@/shared/services/firestoreService';
 
 export interface AssessOptions {
   hard_red_flag_triggered?: boolean;
@@ -69,7 +69,7 @@ export class M3PredictionService {
       };
 
       // Persist to Cloud Firestore
-      await FirestoreService.saveTriageAssessment(bypassResult);
+      await saveM3TriageAssessment(bypassResult as unknown as Record<string, unknown>);
 
       return bypassResult;
     }
@@ -140,7 +140,7 @@ export class M3PredictionService {
     };
 
     // Persist to Cloud Firestore
-    await FirestoreService.saveTriageAssessment(finalResult);
+    await saveM3TriageAssessment(finalResult as unknown as Record<string, unknown>);
 
     return finalResult;
   }

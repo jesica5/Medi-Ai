@@ -1,4 +1,4 @@
-import { ExplainabilityPayload, FeatureContribution, VitalSignsInput, ImputedPatientDemographics } from '@/shared/types/triage';
+import { M3ExplainabilityPayload, FeatureContribution, VitalSignsInput, ImputedPatientDemographics } from '@/shared/types/m3';
 import { ScoreComponents } from '@/ml/pipelines/risk_scoring_engine';
 
 export interface ExplainerInput {
@@ -17,7 +17,7 @@ export class TreeSHAPExplainer {
    * Calculate exact TreeSHAP feature importance attributions for the model prediction.
    * Target latency: < 100 ms.
    */
-  public static generateExplanation(input: ExplainerInput): ExplainabilityPayload {
+  public static generateExplanation(input: ExplainerInput): M3ExplainabilityPayload {
     const startTime = performance.now();
     const timestamp = new Date().toISOString();
 
