@@ -58,4 +58,13 @@ GEMINI_API_KEY=YOUR_GEMINI_API_KEY
 4. Run unit tests:
    ```bash
    npm test
+   # Or run doctor workstation tests
+   npm run test:doctor
    ```
+
+## Module M5: Doctor Emergency Workstation
+
+- **Emergency Queue (`/doctor/queue`)**: Real-time triage patient queue sorted by clinical acuity priority (Hard Red-Flags first, then CRITICAL > HIGH > MODERATE > LOW).
+- **Clinical Review Workspace (`/doctor/review/[id]`)**: Full patient assessment console with vital signs trajectories, explainable AI feature attribution (TreeSHAP), and physician override console with mandatory rationale safeguards.
+- **Medication Reconciliation (`/doctor/medications`)**: Clinical history review and reconciliation interface (automated prescribing strictly excluded).
+- **Emergency Analytics (`/doctor/analytics`)**: De-identified aggregate throughput, acuity distribution, and clinical concordance metrics.
