@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
 import enLocale from '../locales/en-US.json';
 import taLocale from '../locales/ta-IN.json';

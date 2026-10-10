@@ -3,7 +3,7 @@
  * Isolated CSS custom properties for Module M2. Designed for easy swap with shared design system later.
  */
 
-:root {
+.m2Root {
   /* Acuity Colors (Fixed Palette as per Clinical Specification) */
   --color-acuity-critical: #E53E3E;
   --color-acuity-high: #ED8936;

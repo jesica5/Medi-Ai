@@ -2,17 +2,33 @@
  * Module M2: Health Assessment & Medical History Types
  */
 
-export type Language = 'en' | 'ta';
+import type { Language, Gender as SharedGender } from '@/shared/types';
+export type { Language };
 
-export type Gender = 'female' | 'male' | 'other' | 'prefer_not_to_say';
+export type IntakeGender = 'female' | 'male' | 'other' | 'prefer_not_to_say';
+export type Gender = IntakeGender;
 
-export type UserRole = 'anonymous_patient' | 'nurse' | 'doctor' | 'admin';
+export type IntakeUserRole = 'anonymous_patient' | 'nurse' | 'doctor' | 'admin';
+export type UserRole = IntakeUserRole;
+
+export function toSharedGender(gender: IntakeGender): SharedGender {
+  switch (gender) {
+    case 'male':
+      return 'MALE';
+    case 'female':
+      return 'FEMALE';
+    case 'other':
+      return 'OTHER';
+    case 'prefer_not_to_say':
+      return 'PREFER_NOT_TO_SAY';
+  }
+}
 
 export interface Demographics {
   chief_complaint: string;
   date_of_birth?: string | null;
   age?: number | null;
-  gender: Gender;
+  gender: IntakeGender;
   primary_language: Language;
 }
 
@@ -173,6 +189,6 @@ export type ApiResponse<T> = ApiSuccessEnvelope<T> | ApiErrorEnvelope;
 
 export interface SessionUser {
   id: string;
-  role: UserRole;
+  role: IntakeUserRole;
   patientIdScope?: string;
 }
