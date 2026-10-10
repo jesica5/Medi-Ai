@@ -1,29 +1,45 @@
 import Link from 'next/link';
+import styles from './page.module.css';
 
 export default function HomePage() {
   return (
-    <main style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <h1>MediAI Emergency Triage System</h1>
-      <p style={{ color: 'var(--color-text-secondary)' }}>
-        Module M2: Health Assessment &amp; Medical History Prototype
-      </p>
-      <div style={{ marginTop: '1.5rem' }}>
-        <Link
-          href="/intake"
-          style={{
-            display: 'inline-block',
-            padding: '0.75rem 1.5rem',
-            backgroundColor: 'var(--color-primary)',
-            color: '#fff',
-            textDecoration: 'none',
-            borderRadius: 'var(--radius-md)',
-            fontWeight: 500,
-          }}
-        >
-          Launch Patient Intake Flow &rarr;
-        </Link>
+    <main className={styles.main}>
+      <div className={styles.hero}>
+        <div className={styles.badge}>Emergency Triage System</div>
+        <h1 className={styles.title}>MediAI</h1>
+        <p className={styles.subtitle}>
+          Smart Patient Triage &amp; Emergency Risk Prediction
+        </p>
+        <p className={styles.description}>
+          A clinical decision-support platform for structured patient intake,
+          vital-sign capture, and AI-assisted risk assessment.
+        </p>
+        <div className={styles.actions}>
+          <Link href="/intake" className={styles.primaryButton}>
+            Begin Health Assessment →
+          </Link>
+        </div>
       </div>
-      <footer style={{ marginTop: '3rem', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)' }}>
+
+      <div className={styles.featureGrid}>
+        <div className={styles.featureCard}>
+          <div className={styles.featureIcon}>🩺</div>
+          <h2>Patient Intake</h2>
+          <p>Structured symptom collection across 12 clinical domains with bilingual support.</p>
+        </div>
+        <div className={styles.featureCard}>
+          <div className={styles.featureIcon}>📊</div>
+          <h2>Vital Signs</h2>
+          <p>Validated vital-sign capture with range checks and clinical warnings.</p>
+        </div>
+        <div className={styles.featureCard}>
+          <div className={styles.featureIcon}>🔒</div>
+          <h2>Secure Records</h2>
+          <p>Patient data secured by role-based access control and Firestore Security Rules.</p>
+        </div>
+      </div>
+
+      <footer className={styles.footer}>
         Decision-support prototype. Not a diagnosis. Clinical judgment required.
       </footer>
     </main>
